@@ -1,3 +1,4 @@
+#include <QApplication>
 #include <QSerialPortInfo>
 #include <QByteArray>
 #include <memory>
@@ -46,6 +47,9 @@ void BKSerial::command(QString command)
 
 void BKSerial::command(QString command, QList<QString> &args)
 {
+    while (this->_timeout.isActive())
+        qApp->processEvents();
+
     if (!this->isOpen()) {
         emit this->response("ERR: DEVICE NOT OPEN");
         return;
