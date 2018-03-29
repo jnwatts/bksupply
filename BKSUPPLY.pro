@@ -23,3 +23,10 @@ HEADERS  += mainwindow.h \
     bk1696.h
 
 FORMS    += mainwindow.ui
+
+isEmpty(PREFIX) {
+	PREFIX = /usr/local
+}
+
+target.path = $$PREFIX/bin
+INSTALLS += target
