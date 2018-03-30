@@ -19,8 +19,7 @@ public:
     void handleMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 private slots:
-    void response(QString data);
-    void success(void);
+    void bk1696_changed(void);
     void timeout(void);
     void on_open_clicked();
     void on_close_clicked();
