@@ -15,19 +15,23 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->ui->lcdVoltage->display(bk.voltage); });
-    QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->ui->lcdCurrent->display(bk.current); });
-    QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->ui->lcdPower->display(bk.power); });
-    QObject::connect(&bk, &BK1696::openChanged,    [this]() {
+    auto changed = [this]() {
         if (bk.isOpen())
             this->_timer.start();
         else
             this->_timer.stop();
-    });
+    };
 
+    QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->ui->lcdVoltage->display(bk.voltage); });
+    QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->ui->lcdCurrent->display(bk.current); });
+    QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->ui->lcdPower->display(bk.power); });
+    QObject::connect(&bk, &BK1696::openChanged,    changed);
+    QObject::connect(&bk, &BK1696::enabledChanged, changed);
     QObject::connect(&this->_timer, &QTimer::timeout, [this]() {
         if (bk.isOpen())
             bk.update();
+        else
+            this->_timer.stop();
     });
 
     foreach (const QString &port, BK1696::ports()) {
@@ -35,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     this->ui->port->setCurrentIndex(0);
 
-    this->_timer.setInterval(100);
+    this->_timer.setInterval(250);
 }
 
 MainWindow::~MainWindow()
@@ -95,6 +99,7 @@ void MainWindow::on_close_clicked()
 
 void MainWindow::on_on_clicked()
 {
+    this->_timer.stop();
     bk.outputEnable(true);
 }
 
