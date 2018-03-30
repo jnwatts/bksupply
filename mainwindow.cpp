@@ -15,10 +15,15 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QObject::connect(&bk, SIGNAL(enabledChanged()), this, SLOT(bk1696_changed()));
     QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->ui->lcdVoltage->display(bk.voltage); });
     QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->ui->lcdCurrent->display(bk.current); });
     QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->ui->lcdPower->display(bk.power); });
+    QObject::connect(&bk, &BK1696::openChanged,    [this]() {
+        if (bk.isOpen())
+            this->_timer.start();
+        else
+            this->_timer.stop();
+    });
 
     connect(&this->_timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
@@ -72,17 +77,6 @@ void MainWindow::handleMessage(QtMsgType type, const QMessageLogContext &context
 
     *out << prefix.toStdString() << msg.toStdString() << std::endl;
     this->ui->log->appendPlainText(prefix + msg);
-}
-
-void MainWindow::bk1696_changed(void)
-{
-    if (this->_timer.isActive()) {
-        if (!bk.enabled)
-            this->_timer.stop();
-    } else {
-        if (bk.enabled)
-            this->_timer.start();
-    }
 }
 
 void MainWindow::timeout()
