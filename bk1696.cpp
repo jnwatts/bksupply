@@ -52,6 +52,7 @@ static const QList<gpal_offset_t> gpal_offsets = {
     {67, 0,  nullptr},
     {68, 0,  nullptr},
 };
+const int gpal_length = 68;
 
 BK1696::BK1696(QObject *parent) : BKSerial(parent),
     enabled(false),
@@ -81,6 +82,9 @@ void BK1696::update(void)
 {
     this->command("GPAL", [this](QString data) {
         QStringList parts;
+
+        if (data.size() != gpal_length)
+            return;
 
         for (const gpal_offset_t &o : gpal_offsets) {
             QString p = data.mid(o.first - 1, (o.last ? o.last : o.first) - o.first + 1);
