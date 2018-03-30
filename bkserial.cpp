@@ -59,6 +59,7 @@ void BKSerial::command(QString command, QList<QString> &args, response_handler_t
     }
 
     QByteArray data;
+    data.append('\r');
     data.append(command);
     data.append(QString().sprintf("%02d", this->_address));
     foreach (const QString &arg, args) {
