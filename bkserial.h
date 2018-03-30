@@ -31,6 +31,9 @@ public:
 
     static QList<QString> ports();
 
+signals:
+    void openChanged(void);
+
 public slots:
 
 private slots:

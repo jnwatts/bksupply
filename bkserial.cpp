@@ -26,7 +26,10 @@ void BKSerial::open(QString port)
     if (!this->isOpen()) {
         this->_serial.setPortName(port);
         this->_serial.open(QSerialPort::ReadWrite);
-        this->command("SESS");
+        this->command("SESS", [this](QString data) {
+            Q_UNUSED(data);
+            emit this->openChanged();
+        });
     }
 }
 
@@ -36,6 +39,7 @@ void BKSerial::close(void)
         this->command("ENDS", [this](QString data) {
             Q_UNUSED(data);
             this->_serial.close();
+            emit this->openChanged();
         });
     }
 }
