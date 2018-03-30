@@ -18,7 +18,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLCDNumber" name="lcdVolt">
+       <widget class="QLCDNumber" name="lcdVoltage">
         <property name="smallDecimalPoint">
          <bool>false</bool>
         </property>
@@ -34,7 +34,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdAmp">
+       <widget class="QLCDNumber" name="lcdCurrent">
         <property name="digitCount">
          <number>5</number>
         </property>
@@ -47,7 +47,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdWatt">
+       <widget class="QLCDNumber" name="lcdPower">
         <property name="digitCount">
          <number>5</number>
         </property>
