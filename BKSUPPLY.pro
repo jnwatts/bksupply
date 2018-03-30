@@ -30,3 +30,7 @@ isEmpty(PREFIX) {
 
 target.path = $$PREFIX/bin
 INSTALLS += target
+
+desktop.path = $$PREFIX/share/applications
+desktop.files = bksupply.desktop
+INSTALLS += desktop
