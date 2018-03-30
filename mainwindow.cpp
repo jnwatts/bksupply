@@ -25,7 +25,10 @@ MainWindow::MainWindow(QWidget *parent) :
             this->_timer.stop();
     });
 
-    connect(&this->_timer, SIGNAL(timeout()), this, SLOT(timeout()));
+    QObject::connect(&this->_timer, &QTimer::timeout, [this]() {
+        if (bk.isOpen())
+            bk.update();
+    });
 
     foreach (const QString &port, BK1696::ports()) {
         this->ui->port->addItem(port);
@@ -77,12 +80,6 @@ void MainWindow::handleMessage(QtMsgType type, const QMessageLogContext &context
 
     *out << prefix.toStdString() << msg.toStdString() << std::endl;
     this->ui->log->appendPlainText(prefix + msg);
-}
-
-void MainWindow::timeout()
-{
-    if (bk.isOpen())
-        bk.update();
 }
 
 void MainWindow::on_open_clicked()

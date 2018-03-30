@@ -19,14 +19,10 @@ public:
     void handleMessage(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 private slots:
-    void timeout(void);
     void on_open_clicked();
     void on_close_clicked();
-
     void on_on_clicked();
-
     void on_off_clicked();
-
     void on_clear_clicked();
 
 private:
