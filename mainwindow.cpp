@@ -15,18 +15,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    auto changed = [this]() {
-        if (bk.isOpen())
-            this->_timer.start();
-        else
-            this->_timer.stop();
-    };
-
     QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->ui->lcdVoltage->display(bk.voltage); });
     QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->ui->lcdCurrent->display(bk.current); });
     QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->ui->lcdPower->display(bk.power); });
-    QObject::connect(&bk, &BK1696::openChanged,    changed);
-    QObject::connect(&bk, &BK1696::enabledChanged, changed);
     QObject::connect(&this->_timer, &QTimer::timeout, [this]() {
         if (bk.isOpen())
             bk.update();
@@ -88,7 +79,7 @@ void MainWindow::handleMessage(QtMsgType type, const QMessageLogContext &context
 
 void MainWindow::on_open_clicked()
 {
-    bk.open(this->ui->port->currentText());
+    bk.open(this->ui->port->currentText(), [this]() { this->_timer.start(); });
 }
 
 void MainWindow::on_close_clicked()
@@ -100,13 +91,13 @@ void MainWindow::on_close_clicked()
 void MainWindow::on_on_clicked()
 {
     this->_timer.stop();
-    bk.outputEnable(true);
+    bk.outputEnable(true, [this]() { this->_timer.start(); });
 }
 
 void MainWindow::on_off_clicked()
 {
     this->_timer.stop();
-    bk.outputEnable(false);
+    bk.outputEnable(false, [this]() { this->_timer.start(); });
 }
 
 void MainWindow::on_clear_clicked()

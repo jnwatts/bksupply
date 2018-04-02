@@ -66,21 +66,23 @@ BK1696::~BK1696()
 {
 }
 
-void BK1696::outputEnable(bool enable)
+void BK1696::outputEnable(bool enable, completed_handler_t complete)
 {
     QList<QString> args;
     args << (enable ? "0" : "1");
-    this->command("SOUT", args, [this, enable](QString data) {
+    this->command("SOUT", args, [this, enable, complete](QString data) {
         if (data == "OK") {
             this->enabled = enable;
             emit this->enabledChanged();
         }
+        if (complete)
+            complete();
     });
 }
 
-void BK1696::update(void)
+void BK1696::update(completed_handler_t complete)
 {
-    this->command("GPAL", [this](QString data) {
+    this->command("GPAL", [this, complete](QString data) {
         QStringList parts;
 
         if (data.size() != gpal_length)
@@ -100,6 +102,9 @@ void BK1696::update(void)
         emit this->voltageChanged();
         emit this->currentChanged();
         emit this->powerChanged();
+
+        if (complete)
+            complete();
     });
 }
 

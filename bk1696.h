@@ -11,8 +11,8 @@ public:
     BK1696(QObject *parent = 0);
     ~BK1696(void);
 
-    void outputEnable(bool enable);
-    void update(void);
+    void outputEnable(bool enable, completed_handler_t complete = nullptr);
+    void update(completed_handler_t complete = nullptr);
 
     bool enabled;
     double voltage;

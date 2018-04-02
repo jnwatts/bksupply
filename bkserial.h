@@ -11,6 +11,7 @@ class BKSerial : public QObject
     Q_OBJECT
 public:
     typedef std::function<void(QString)> response_handler_t;
+    typedef std::function<void(void)> completed_handler_t;
 
     typedef struct {
         response_handler_t response_handler;
@@ -19,7 +20,7 @@ public:
     explicit BKSerial(QObject *parent = 0);
     ~BKSerial(void);
 
-    void open(QString port);
+    void open(QString port, completed_handler_t complete = nullptr);
     void close(void);
     bool isOpen(void) { return this->_serial.isOpen(); }
 

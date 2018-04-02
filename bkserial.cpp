@@ -21,14 +21,16 @@ BKSerial::~BKSerial()
     }
 }
 
-void BKSerial::open(QString port)
+void BKSerial::open(QString port, completed_handler_t complete)
 {
     if (!this->isOpen()) {
         this->_serial.setPortName(port);
         this->_serial.open(QSerialPort::ReadWrite);
-        this->command("SESS", [this](QString data) {
+        this->command("SESS", [this, complete](QString data) {
             Q_UNUSED(data);
             emit this->openChanged();
+            if (complete)
+                complete();
         });
     }
 }
