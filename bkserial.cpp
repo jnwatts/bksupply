@@ -26,7 +26,7 @@ void BKSerial::open(QString port, completed_handler_t complete)
     if (!this->isOpen()) {
         this->_serial.setPortName(port);
         this->_serial.open(QSerialPort::ReadWrite);
-        this->command("SESS", [this, complete](QString data) {
+        this->command("SESS", [this, complete](QStringList data) {
             Q_UNUSED(data);
             emit this->openChanged();
             if (complete)
@@ -38,7 +38,7 @@ void BKSerial::open(QString port, completed_handler_t complete)
 void BKSerial::close(void)
 {
     if (this->isOpen()) {
-        this->command("ENDS", [this](QString data) {
+        this->command("ENDS", [this](QStringList data) {
             Q_UNUSED(data);
             this->_serial.close();
             emit this->openChanged();
@@ -54,9 +54,13 @@ void BKSerial::command(QString command, response_handler_t response_handler)
 
 void BKSerial::command(QString command, QList<QString> &args, response_handler_t response_handler)
 {
+    request_t request = {command, nullptr, response_handler};
+    auto iter = this->_responses.find(command);
+    if (iter != this->_responses.end())
+        request.response = &(iter.value());
+
     if (!this->isOpen()) {
-        if (response_handler)
-            response_handler("ERR: DEVICE NOT OPEN");
+        this->failure(request, "ERR: DEVICE NOT OPEN");
         return;
     }
 
@@ -69,7 +73,6 @@ void BKSerial::command(QString command, QList<QString> &args, response_handler_t
     }
     data.append('\r');
 
-    request_t request = {response_handler};
     this->_requests << request;
     this->_serial.write(data);
     this->_timeout.start();
@@ -86,6 +89,37 @@ QList<QString> BKSerial::ports()
     return result;
 }
 
+void BKSerial::registerResponse(QString command, const response_t &response)
+{
+    this->_responses[command] = response;
+}
+
+void BKSerial::failure(request_t &request, QString reason)
+{
+    request.response_handler({reason});
+}
+
+void BKSerial::parseResponse(request_t &request, QString data)
+{
+    Q_ASSERT(request.response != nullptr);
+    response_t &response = *request.response;
+
+    QStringList parts;
+
+    if (response.size == data.size()) {
+        for (auto &part : response.parts) {
+            QString part_str = data.mid(part.first - 1, (part.last ? part.last : part.first) - part.first + 1);
+            if (part.transform)
+                part_str = part.transform(part_str);
+            parts << part_str;
+        }
+    } else {
+        parts << data;
+    }
+
+    request.response_handler(parts);
+}
+
 void BKSerial::dataReady(void)
 {
     QByteArray data = this->_serial.readAll();
@@ -96,9 +130,16 @@ void BKSerial::dataReady(void)
         if (this->_requests.size() > 0) {
             request_t &request = this->_requests.first();
 
+            
+
             data = this->_response.left(pos);
-            if (request.response_handler)
-                request.response_handler(data);
+
+            if (request.response_handler) {
+                if (data == "OK" || request.response == nullptr)
+                    request.response_handler({data});
+                else
+                    this->parseResponse(request, data);
+            }
             if (data == "OK")
                 this->_requests.removeFirst();
         }
@@ -112,8 +153,7 @@ void BKSerial::dataReady(void)
 void BKSerial::timeout()
 {
     for (request_t &request : this->_requests) {
-        if (request.response_handler)
-            request.response_handler("ERR: TIMEOUT");
+        this->failure(request, "ERR: TIMEOUT");
     }
 
     this->_requests.clear();

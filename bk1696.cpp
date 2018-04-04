@@ -3,56 +3,8 @@
 typedef std::function<QString(QString)> transform_t;
 
 static QString binaryDecode(QString data);
-
-typedef struct {
-    int first;
-    int last;
-    transform_t transform;
-} gpal_offset_t;
-
-enum {
-    READING_VOLTAGE = 0,
-    READING_CURRENT = 2,
-    READING_POWER = 4,
-    SETTING_VOLTAGE = 12,
-    SETTING_CURRENT = 16,
-    OUTPUT_ON = 27,
-    OUTPUT_OFF = 28,
-};
-
-static const QList<gpal_offset_t> gpal_offsets = {
-    {1,  8,  &binaryDecode},
-    {9,  0,  nullptr},
-    {10, 17, &binaryDecode},
-    {18, 0,  nullptr},
-    {19, 26, &binaryDecode},
-    {27, 0,  nullptr},
-    {28, 31, &binaryDecode},
-    {32, 35, &binaryDecode},
-    {36, 0,  nullptr},
-    {37, 0,  nullptr},
-    {38, 0,  nullptr},
-    {39, 0,  nullptr},
-    {40, 45, &binaryDecode},
-    {46, 0,  nullptr},
-    {47, 0,  nullptr},
-    {48, 0,  nullptr},
-    {49, 54, &binaryDecode},
-    {55, 0,  nullptr},
-    {56, 0,  nullptr},
-    {57, 0,  nullptr},
-    {58, 59, &binaryDecode},
-    {60, 0,  nullptr},
-    {61, 0,  nullptr},
-    {62, 0,  nullptr},
-    {63, 0,  nullptr},
-    {64, 0,  nullptr},
-    {65, 0,  nullptr},
-    {66, 0,  nullptr},
-    {67, 0,  nullptr},
-    {68, 0,  nullptr},
-};
-const int gpal_length = 68;
+static QString _decimalDecode(int decimalPlaces, QString data);
+static transform_t decimalDecode(int decimalPlaces) { return std::bind(&_decimalDecode, decimalPlaces, std::placeholders::_1); };
 
 BK1696::BK1696(QObject *parent) : BKSerial(parent),
     enabled(false),
@@ -60,6 +12,43 @@ BK1696::BK1696(QObject *parent) : BKSerial(parent),
     current(0.0),
     power(0.0)
 {
+    this->registerResponse("GPAL", {68, {
+        {1,  8,  &binaryDecode},
+        {9,  0,  nullptr},
+        {10, 17, &binaryDecode},
+        {18, 0,  nullptr},
+        {19, 26, &binaryDecode},
+        {27, 0,  nullptr},
+        {28, 31, &binaryDecode},
+        {32, 35, &binaryDecode},
+        {36, 0,  nullptr},
+        {37, 0,  nullptr},
+        {38, 0,  nullptr},
+        {39, 0,  nullptr},
+        {40, 45, &binaryDecode},
+        {46, 0,  nullptr},
+        {47, 0,  nullptr},
+        {48, 0,  nullptr},
+        {49, 54, &binaryDecode},
+        {55, 0,  nullptr},
+        {56, 0,  nullptr},
+        {57, 0,  nullptr},
+        {58, 59, &binaryDecode},
+        {60, 0,  nullptr},
+        {61, 0,  nullptr},
+        {62, 0,  nullptr},
+        {63, 0,  nullptr},
+        {64, 0,  nullptr},
+        {65, 0,  nullptr},
+        {66, 0,  nullptr},
+        {67, 0,  nullptr},
+        {68, 0,  nullptr},
+    }});
+    this->registerResponse("GETD", {9, {
+        {1, 4, decimalDecode(2)},
+        {5, 8, decimalDecode(2)},
+        {9, 9, nullptr},
+    }});
 }
 
 BK1696::~BK1696()
@@ -70,8 +59,8 @@ void BK1696::outputEnable(bool enable, completed_handler_t complete)
 {
     QList<QString> args;
     args << (enable ? "0" : "1");
-    this->command("SOUT", args, [this, enable, complete](QString data) {
-        if (data == "OK") {
+    this->command("SOUT", args, [this, enable, complete](QStringList data) {
+        if (data[0] == "OK") {
             this->enabled = enable;
             emit this->enabledChanged();
         }
@@ -82,22 +71,55 @@ void BK1696::outputEnable(bool enable, completed_handler_t complete)
 
 void BK1696::update(completed_handler_t complete)
 {
-    this->command("GPAL", [this, complete](QString data) {
-        QStringList parts;
+    this->getd(complete);
+    return;
+}
 
-        if (data.size() != gpal_length)
+void BK1696::getd(completed_handler_t complete)
+{
+    this->command("GETD", [this, complete](QStringList data) {
+        enum {
+            VOLTAGE = 0,
+            CURRENT = 1,
+            POWER_MODE = 2,
+        };
+        if (data[0] == "OK")
             return;
 
-        for (const gpal_offset_t &o : gpal_offsets) {
-            QString p = data.mid(o.first - 1, (o.last ? o.last : o.first) - o.first + 1);
-            if (o.transform)
-                p = o.transform(p);
-            parts << p;
-        }
+        this->voltage    = data.at(VOLTAGE).toDouble();
+        this->current    = data.at(CURRENT).toDouble();
+        this->power_mode = (power_mode_t)data.at(POWER_MODE).toInt();
+        this->power      = this->voltage * this->current;
 
-        this->voltage = parts.at(READING_VOLTAGE).toDouble();
-        this->current = parts.at(READING_CURRENT).toDouble();
-        this->power = parts.at(READING_POWER).toDouble();
+        emit this->voltageChanged();
+        emit this->currentChanged();
+        emit this->powerModeChanged();
+        emit this->powerChanged();
+
+        if (complete)
+            complete();
+    });
+}
+
+void BK1696::gpal(completed_handler_t complete)
+{
+    this->command("GPAL", [this, complete](QStringList data) {
+        enum {
+            READING_VOLTAGE = 0,
+            READING_CURRENT = 2,
+            READING_POWER = 4,
+            SETTING_VOLTAGE = 12,
+            SETTING_CURRENT = 16,
+            OUTPUT_ON = 27,
+            OUTPUT_OFF = 28,
+        };
+
+        if (data[0] == "OK")
+            return;
+
+        this->voltage = data.at(READING_VOLTAGE).toDouble();
+        this->current = data.at(READING_CURRENT).toDouble();
+        this->power = data.at(READING_POWER).toDouble();
 
         emit this->voltageChanged();
         emit this->currentChanged();
@@ -137,3 +159,8 @@ static QString binaryDecode(QString data)
     }
     return p;
 };
+
+static QString _decimalDecode(int decimalPlaces, QString data)
+{
+    return data.insert(data.size() - decimalPlaces, '.');
+}

@@ -4,16 +4,32 @@
 #include <QObject>
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
+#include <QVector>
 #include <functional>
+#include <QMap>
 
 class BKSerial : public QObject
 {
     Q_OBJECT
 public:
-    typedef std::function<void(QString)> response_handler_t;
+    typedef std::function<void(QStringList)> response_handler_t;
     typedef std::function<void(void)> completed_handler_t;
+    typedef std::function<QString(QString)> transform_t;
 
     typedef struct {
+        int first;
+        int last;
+        transform_t transform;
+    } response_part_t;
+
+    typedef struct {
+        int size;
+        QVector<response_part_t> parts;
+    } response_t;
+
+    typedef struct {
+        QString command;
+        response_t *response;
         response_handler_t response_handler;
     } request_t;
 
@@ -32,6 +48,11 @@ public:
 
     static QList<QString> ports();
 
+protected:
+    void registerResponse(QString command, const response_t &response);
+    void failure(request_t &request, QString reason);
+    void parseResponse(request_t &request, QString data);
+
 signals:
     void openChanged(void);
 
@@ -47,6 +68,7 @@ private:
     QByteArray _response;
     QTimer _timeout;
     QList<request_t> _requests;
+    QMap<QString, response_t> _responses;
 };
 
 #endif // BKSERIAL_H
