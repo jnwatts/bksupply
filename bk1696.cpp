@@ -46,7 +46,7 @@ BK1696::BK1696(QObject *parent) : BKSerial(parent),
     }});
     this->registerResponse("GETD", {9, {
         {1, 4, decimalDecode(2)},
-        {5, 8, decimalDecode(2)},
+        {5, 8, decimalDecode(3)},
         {9, 9, nullptr},
     }});
 }
