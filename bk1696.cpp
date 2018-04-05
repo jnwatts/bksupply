@@ -63,7 +63,6 @@ void BK1696::outputEnable(bool enable, completed_handler_t complete)
 void BK1696::update(completed_handler_t complete)
 {
     this->getd(complete);
-    return;
 }
 
 void BK1696::getd(completed_handler_t complete)
