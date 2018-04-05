@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QLabel>
 
 namespace Ui {
 class MainWindow;
@@ -26,6 +27,8 @@ private slots:
     void on_clear_clicked();
 
 private:
+    void display(QLabel *label, double value, int precision);
+
     Ui::MainWindow *ui;
     QTimer _timer;
 };

@@ -18,44 +18,95 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QLCDNumber" name="lcdVoltage">
-        <property name="smallDecimalPoint">
+       <widget class="QLabel" name="lblVoltage">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+          <pointsize>18</pointsize>
+         </font>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text">
+         <string>0.00</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
+        </property>
+        <property name="scaledContents">
          <bool>false</bool>
         </property>
-        <property name="digitCount">
-         <number>5</number>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-        <property name="value" stdset="0">
-         <double>0.000000000000000</double>
+        <property name="textInteractionFlags">
+         <set>Qt::NoTextInteraction</set>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdCurrent">
-        <property name="digitCount">
-         <number>5</number>
+       <widget class="QLabel" name="lblCurrent">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+          <pointsize>18</pointsize>
+         </font>
         </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
         </property>
-        <property name="value" stdset="0">
-         <double>0.000000000000000</double>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text">
+         <string>0.000</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::NoTextInteraction</set>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="lcdPower">
-        <property name="digitCount">
-         <number>5</number>
+       <widget class="QLabel" name="lblPower">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+          <pointsize>18</pointsize>
+         </font>
         </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
+        <property name="frameShape">
+         <enum>QFrame::Box</enum>
         </property>
-        <property name="value" stdset="0">
-         <double>0.000000000000000</double>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text">
+         <string>0.000</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::PlainText</enum>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::NoTextInteraction</set>
         </property>
        </widget>
       </item>

@@ -15,9 +15,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->ui->lcdVoltage->display(bk.voltage); });
-    QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->ui->lcdCurrent->display(bk.current); });
-    QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->ui->lcdPower->display(bk.power); });
+    this->ui->lblVoltage->setMinimumWidth(QFontMetrics(this->ui->lblVoltage->font()).width("00.000") * 1.25);
+    this->ui->lblCurrent->setMinimumWidth(this->ui->lblVoltage->minimumWidth());
+    this->ui->lblPower->setMinimumWidth(this->ui->lblVoltage->minimumWidth());
+
+    QObject::connect(&bk, &BK1696::voltageChanged, [this]() { this->display(this->ui->lblVoltage, bk.voltage, 3); });
+    QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->display(this->ui->lblCurrent, bk.current, 3); });
+    QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->display(this->ui->lblPower,   bk.power,   3); });
     QObject::connect(&this->_timer, &QTimer::timeout, [this]() {
         if (bk.isOpen())
             bk.update();
@@ -103,4 +107,10 @@ void MainWindow::on_off_clicked()
 void MainWindow::on_clear_clicked()
 {
     this->ui->log->clear();
+}
+
+void MainWindow::display(QLabel *label, double value, int precision)
+{
+    QString str = QString::number(value, 'f', precision);
+    label->setText(str);
 }
