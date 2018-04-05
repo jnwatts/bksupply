@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ui->port->setCurrentIndex(0);
 
     this->_timer.setInterval(250);
+
+    this->update();
 }
 
 MainWindow::~MainWindow()
@@ -83,13 +85,14 @@ void MainWindow::handleMessage(QtMsgType type, const QMessageLogContext &context
 
 void MainWindow::on_open_clicked()
 {
-    bk.open(this->ui->port->currentText(), [this]() { this->_timer.start(); });
+    bk.open(this->ui->port->currentText(), [this]() { this->_timer.start(); this->update(); });
 }
 
 void MainWindow::on_close_clicked()
 {
     this->_timer.stop();
     bk.close();
+    this->update();
 }
 
 void MainWindow::on_on_clicked()
@@ -113,4 +116,16 @@ void MainWindow::display(QLabel *label, double value, int precision)
 {
     QString str = QString::number(value, 'f', precision);
     label->setText(str);
+}
+
+void MainWindow::update()
+{
+    this->ui->lblVoltage->setEnabled(bk.isOpen());
+    this->ui->lblCurrent->setEnabled(bk.isOpen());
+    this->ui->lblPower->setEnabled(bk.isOpen());
+    this->ui->on->setEnabled(bk.isOpen());
+    this->ui->off->setEnabled(bk.isOpen());
+    this->ui->open->setEnabled(!bk.isOpen());
+    this->ui->close->setEnabled(bk.isOpen());
+
 }

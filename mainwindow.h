@@ -28,6 +28,7 @@ private slots:
 
 private:
     void display(QLabel *label, double value, int precision);
+    void update(void);
 
     Ui::MainWindow *ui;
     QTimer _timer;
