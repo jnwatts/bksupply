@@ -57,16 +57,7 @@ BK1696::~BK1696()
 
 void BK1696::outputEnable(bool enable, completed_handler_t complete)
 {
-    QList<QString> args;
-    args << (enable ? "0" : "1");
-    this->command("SOUT", args, [this, enable, complete](QStringList data) {
-        if (data[0] == "OK") {
-            this->enabled = enable;
-            emit this->enabledChanged();
-        }
-        if (complete)
-            complete();
-    });
+    this->sout(enable, complete);
 }
 
 void BK1696::update(completed_handler_t complete)
@@ -127,6 +118,20 @@ void BK1696::gpal(completed_handler_t complete)
 
         if (complete)
             complete();
+    });
+}
+
+void BK1696::sout(bool enable, completed_handler_t complete)
+{
+    QList<QString> args;
+    args << (enable ? "0" : "1");
+    this->command("SOUT", args, [this, enable, complete](QStringList data) {
+        if (data[0] == "OK") {
+            this->enabled = enable;
+            emit this->enabledChanged();
+            if (complete)
+                complete();
+        }
     });
 }
 

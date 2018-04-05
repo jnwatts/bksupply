@@ -35,6 +35,7 @@ signals:
 private:
     void getd(completed_handler_t complete = nullptr);
     void gpal(completed_handler_t complete = nullptr);
+    void sout(bool enable, completed_handler_t complete = nullptr);
 };
 
 #endif // BK1696_H
