@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport
+QT       += core gui serialport svg
 CONFIG += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -34,3 +34,6 @@ INSTALLS += target
 desktop.path = $$PREFIX/share/applications
 desktop.files = bksupply.desktop
 INSTALLS += desktop
+
+RESOURCES += \
+    mainwindow.qrc

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ellipses.svg</file>
+        <file>delete.svg</file>
+    </qresource>
+</RCC>
