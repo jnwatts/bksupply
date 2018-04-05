@@ -91,8 +91,7 @@ void MainWindow::on_open_clicked()
 void MainWindow::on_close_clicked()
 {
     this->_timer.stop();
-    bk.close();
-    this->update();
+    bk.close([this]() { this->update(); });
 }
 
 void MainWindow::on_on_clicked()

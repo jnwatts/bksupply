@@ -35,13 +35,18 @@ void BKSerial::open(QString port, completed_handler_t complete)
     }
 }
 
-void BKSerial::close(void)
+void BKSerial::close(completed_handler_t complete)
 {
     if (this->isOpen()) {
-        this->command("ENDS", [this](QStringList data) {
+        this->command("ENDS", [this, complete](QStringList data) {
             Q_UNUSED(data);
+
             this->_serial.close();
+
             emit this->openChanged();
+
+            if (complete)
+                complete();
         });
     }
 }

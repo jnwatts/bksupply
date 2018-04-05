@@ -37,7 +37,7 @@ public:
     ~BKSerial(void);
 
     void open(QString port, completed_handler_t complete = nullptr);
-    void close(void);
+    void close(completed_handler_t complete);
     bool isOpen(void) { return this->_serial.isOpen(); }
 
     void setAddress(int address) { this->_address = address; }
