@@ -73,11 +73,15 @@ void BK1696::getd(completed_handler_t complete)
             CURRENT = 1,
             POWER_MODE = 2,
         };
-        if (data[0] == "OK") {
+
+        if (data[0] == "OK" || data[0].startsWith("ERR")) {
             if (complete)
                 complete();
             return;
         }
+
+        if (POWER_MODE > data.size() - 1)
+            return;
 
         this->voltage    = data.at(VOLTAGE).toDouble();
         this->current    = data.at(CURRENT).toDouble();
@@ -105,11 +109,14 @@ void BK1696::gpal(completed_handler_t complete)
             OUTPUT_OFF = 28,
         };
 
-        if (data[0] == "OK") {
+        if (data[0] == "OK" || data[0].startsWith("ERR")) {
             if (complete)
                 complete();
             return;
         }
+
+        if (OUTPUT_OFF > data.size() - 1)
+            return;
 
         this->voltage = data.at(READING_VOLTAGE).toDouble();
         this->current = data.at(READING_CURRENT).toDouble();
