@@ -26,15 +26,18 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(&bk, &BK1696::currentChanged, [this]() { this->display(this->ui->lblCurrent, bk.current, 3); });
     QObject::connect(&bk, &BK1696::powerChanged,   [this]() { this->display(this->ui->lblPower,   bk.power,   3); });
     QObject::connect(&this->_timer, &QTimer::timeout, [this]() {
-        if (bk.isOpen())
+        if (bk.isOpen()) {
             bk.update();
-        else
-            this->_timer.stop();
+            this->_timer.start();
+        } else {
+            this->update();
+        }
     });
 
     this->loadSettings();
 
     this->_timer.setInterval(250);
+    this->_timer.setSingleShot(true);
 }
 
 MainWindow::~MainWindow()
