@@ -4,6 +4,8 @@
 #include <memory>
 #include "bkserial.h"
 
+const int MAX_TIMEOUTS = 3;
+
 BKSerial::BKSerial(QObject *parent) : QObject(parent)
 {
     connect(&this->_serial, SIGNAL(readyRead()), this, SLOT(dataReady()));
@@ -24,6 +26,7 @@ BKSerial::~BKSerial()
 void BKSerial::open(QString port, completed_handler_t complete)
 {
     if (!this->isOpen()) {
+        this->_timeout_count = 0;
         this->_serial.setPortName(port);
         this->_serial.open(QSerialPort::ReadWrite);
         this->command("SESS", [this, complete](QStringList data) {
@@ -78,9 +81,11 @@ void BKSerial::command(QString command, QList<QString> &args, response_handler_t
     }
     data.append('\r');
 
+    if (this->_requests.size() == 0)
+        this->_timeout.start();
+
     this->_requests << request;
     this->_serial.write(data);
-    this->_timeout.start();
 }
 
 QList<QString> BKSerial::ports()
@@ -157,9 +162,23 @@ void BKSerial::dataReady(void)
 
 void BKSerial::timeout()
 {
-    for (request_t &request : this->_requests) {
-        this->failure(request, "ERR: TIMEOUT");
-    }
+    this->_timeout_count++;
+    if (this->_timeout_count > MAX_TIMEOUTS) {
+        qWarning("Too many timeouts, closing port");
+        this->_serial.close();
+        emit this->openChanged();
 
-    this->_requests.clear();
+        for (request_t &request : this->_requests) {
+            this->failure(request, "ERR: TIMEOUT");
+        }
+        this->_requests.clear();
+    } else {
+        if (this->_requests.size() > 0) {
+            request_t &request = this->_requests.first();
+            this->failure(request, "ERR: TIMEOUT");
+            this->_requests.pop_front();
+        }
+        if (this->_requests.size() > 0)
+            this->_timeout.start();
+    }
 }

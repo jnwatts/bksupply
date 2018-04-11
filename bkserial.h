@@ -69,6 +69,7 @@ private:
     QTimer _timeout;
     QList<request_t> _requests;
     QMap<QString, response_t> _responses;
+    int _timeout_count;
 };
 
 #endif // BKSERIAL_H
